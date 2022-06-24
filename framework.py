@@ -50,14 +50,22 @@ class TextInput():
         self.clavier = None
 
     def press(self, clavier, code, texte, modificateurs):
-        if code[0] == 8:
+        if code[0] in [303, 304, 308, 301]:  # rshift, shift, alt, capslock
+            pass
+        elif code[0] == 8:
             self.text = self.text[:-1]
         elif code[0] == 13:
             self.sent = True
         elif texte == None:
             print("Code: ", code)
         else:
-            self.text += texte
+            if "capslock" in modificateurs or "shift" in modificateurs:
+                if code[0] == 59:
+                   self.text += "."
+                else:
+                    self.text += texte.upper()
+            else:
+                self.text += texte
         if len(self.text) == 0:
             self.shown_text = self.placeholder
         elif self.password:
