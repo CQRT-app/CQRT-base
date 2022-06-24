@@ -7,12 +7,13 @@ class Commandeur():
     def __init__(self):
         self.nbre_lignes = 44
         self.historique = [""] * self.nbre_lignes
-                        # , "", "", "", "", "", "", "", "", "",
-                        # "", "", "", "", "", "", "", "", "", "",
-                        # "", "", "", "", "", "", "", "", "", "",
-                        # "", "", "", "", "", "", "", "", "", "",
-                        # "", "", "", ""]
         self.centre_historique = [False] * self.nbre_lignes
+        self.commandes_simples = {"cwd": commandes.cwd,
+                                  "mkdir": commandes.mkdir,
+                                  "rmdir": commandes.rmdir,
+                                  "cd": commandes.cd,
+                                  "mkr": commandes.mkr,
+                                  "rkr": commandes.rkr}
 
     def ecrire(self, ligne, centrer=False):
         self.historique.pop(0)
@@ -26,29 +27,26 @@ class Commandeur():
         c = commande.split(" ")
         arguments = c[1:]
         commande = c[0]
-        if commande == "help" or commande == "h" or commande == "?":
+        if commande in self.commandes_simples:
+            self.ecrire("")
+            self.ecrire(self.commandes_simples[commande](*arguments))
+        elif commande == "help" or commande == "h" or commande == "?":
             res = commandes.help()
             for x in res[0].keys():
                 self.ecrire("")
                 self.ecrire(x.upper()+": "+res[0][x])
                 if res[1][x] != "":
                     self.ecrire("ALIASES: "+res[1][x])
-        elif commande == "cwd":
-            self.ecrire("")
-            self.ecrire(commandes.cwd())
         elif commande == "ls" or commande == "listdir" or commande == "dir":
             res = commandes.ls()
             self.ecrire("")
             for x in res:
                 self.ecrire(x, True)
-        elif commande == "mkdir":
-            res = commandes.mkdir(arguments[0])
+        elif commande == "lkr":
+            res = commandes.lkr()
             self.ecrire("")
-            self.ecrire(res)
-        elif commande == "cd":
-            res = commandes.cd(arguments[0])
-            self.ecrire("")
-            self.ecrire(res)
+            for x in res:
+                self.ecrire(x, True)
         else:
             print("|"+commande+"|", arguments)
             self.ecrire('Mauvaise commande. Essayez de taper "help"')
