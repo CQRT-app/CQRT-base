@@ -4,37 +4,32 @@
   ],
   "Tests de l'initialisation:": [
     "bytestring(10).contenu == \"1010\"",
+    "bytestring(b'1010').contenu == \"1010\"",
     "bytestring(10).signed == False",
     "bytestring(10).signed_version() == \"01010\"",
-    "bytestring(-10).contenu == \"1110\"",
+    "bytestring(-10).contenu == \"10110\"",
     "bytestring(-10).signed == True",
-    "bytestring(-10).signed_version() == \"1110\"",
+    "bytestring(-10).signed_version() == \"10110\"",
     "bytestring(\"10101010\").contenu == \"10101010\"",
     "bytestring(2**30-1).contenu == \"111111111111111111111111111111\""
   ],
   "Tests du padding:": [
     "bytestring(\"010\").pad(8) == \"00000010\"",
     "bytestring(\"11111111\").pad(8) == \"11111111\"",
-    "bytestring(\"00000000\").pad(8) == \"00000000\""
+    "bytestring(\"00000000\").pad(8) == \"00000000\"",
+    "bytestring(-10).fill(10).contenu == \"0000010110\"",
+    "bytestring(-10).fill(10).clean().contenu == \"010110\"",
+    "bytestring(10).fill(100).clean().contenu == \"1010\""
   ],
   "Tests des conversions:": [
-    "bytestring(255).to_bytes() == b'11111111'",
     "bytes(bytestring(255)) == b'11111111'",
     "bytestring(255).hexa() == \"FF\"",
-    "hex(bytestring(255)) == \"FF\"",
-    "bytestring(255).to_int() == 255",
     "int(bytestring(255)) == 255",
-    "bytestring(255).to_string() == chr(255)",
     "str(bytestring(255)) == chr(255)",
-    "bytestring(35).to_bytes() == b'100011'",
     "bytes(bytestring(35)) == b'100011'",
     "bytestring(35).hexa() == \"23\"",
-    "hex(bytestring(35)) == \"23\"",
-    "bytestring(35).to_int() == 35",
     "int(bytestring(35)) == 35",
-    "bytestring(35).to_string() == chr(35)",
-    "str(bytestring(35)) == chr(35)",
-    "str(bytestring(\"€uro\")) == \"€uro\""
+    "str(bytestring(35)) == chr(35)"
   ],
   "Test des opérations binaires:": [
     "bytestring(10) & bytestring(\"1111\") == \"1010\"",
@@ -74,18 +69,21 @@
   ],
   "Test des opérations mathématiques:": [
     "abs(bytestring(-10)) == \"1010\"",
-    "bytestring(2) + bytestring(3).to_int() == 5",
-    "bytestring(bytestring(2) + bytestring(3)).to_int() == 5",
+    "bytestring(2) + int(bytestring(3)) == 5",
+    "int(bytestring(bytestring(2) + bytestring(3))) == 5",
     "bytestring(5) - bytestring(10) == bytestring(-5)",
-    "bytestring(bytestring(10) * bytestring(10)).to_int() == 100",
-    "bytestring(bytestring(10) / bytestring(10)).to_int() == 1",
-    "bytestring(bytestring(100000000000000) * bytestring(-1)).to_int() == -100000000000000",
-    "bytestring(-3) + bytestring(-3).to_int() == -6"
+    "int(bytestring(bytestring(10) * bytestring(10))) == 100",
+    "int(bytestring(bytestring(10) // bytestring(10))) == 1",
+    "int(bytestring(bytestring(100000000000000) * bytestring(-1))) == -100000000000000",
+    "bytestring(-3) + int(bytestring(-3)) == -6"
   ],
   "Test des opérations spéciales:": [
     "bytestring(12121212).cypher(bytestring(1254)).cypher(bytestring(1254)) == bytestring(12121212)",
     "bytestring(1212).complement(2) == bytestring(1212).complement(1)+1",
     "~ bytestring(1212) == bytestring(1212).complement(1)",
     "bytestring(\"abaca\").radix() == \"abaca\""
+  ],
+  "Tests abandonnés:": [
+    "str(bytestring(\"€uro\")) == \"€uro\""
   ]
 }

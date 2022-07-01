@@ -7,11 +7,16 @@ for testset in testsets.keys():
     tests = json.load(testsets[testset])
     for x in tests:
         print(x)
+        i = 1
         try:
             for test in tests[x]:
                 assert eval(test)
+                print("Test", i, "passé")
+                i += 1
             print("Réussi!\n")
+        except AssertionError as e:
+            print(f"TEST {i} ÉCHOUÉ! {e}\n")
         except Exception as e:
-            print(f"ÉCHOUÉ! {e}\n")
+            print(f"ERREUR! {e}\n")
     print("\n")
     testsets[testset].close()
