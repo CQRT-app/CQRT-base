@@ -3,7 +3,7 @@ from CLIENT.bytes import bytestring
 
 testsets = {"TESTS BYTESTRINGS:": open("test_bytestrings.json", "r", encoding="utf-8")}
 for testset in testsets.keys():
-    print(testset)
+    print(testset, "\n")
     tests = json.load(testsets[testset])
     for x in tests:
         print(x)

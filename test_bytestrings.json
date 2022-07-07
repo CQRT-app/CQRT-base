@@ -38,12 +38,22 @@
     "bytestring(9999) | bytestring(\"0\") == bytestring(9999).contenu",
     "bytestring(10) ^ bytestring(\"1111\") == \"0101\"",
     "bytestring(9999) ^ bytestring(\"0\") == bytestring(9999).contenu",
-    "(~bytestring(10)).contenu == \"0101\"",
-    "~bytestring(\"0111100001010\") == bytestring(\"1000011110101\")",
-    "bytestring(10) >> 2 == bytestring(2).contenu",
-    "bytestring(9999) >> 2 == bytestring(2499).contenu",
-    "bytestring(10) << 2 == bytestring(40).contenu",
-    "bytestring(9999) << 2 == bytestring(39996).contenu"
+    "~bytestring(10) == \"0101\"",
+    "~bytestring(\"0111100001010\") == \"1000011110101\"",
+    "int(bytestring(8) >> 1) == 4",
+    "int(bytestring(8) >> 2) == 2",
+    "int(bytestring(-3) >> 1) == -2",
+    "bytestring(10) >> 2 == bytestring(2)",
+    "bytestring(9999) >> 2 == bytestring(2499)",
+    "int(bytestring(31) >> 27) == 31 >> 27",
+    "int(bytestring(-31) >> 27) == -31 >> 27",
+    "int(bytestring(8) << 1) == 16",
+    "int(bytestring(8) << 2) == 32",
+    "int(bytestring(-3) << 1) == -6",
+    "bytestring(10) << 2 == bytestring(40)",
+    "bytestring(9999) << 2 == bytestring(39996)",
+    "int(bytestring(31) << 27) == 31 << 27",
+    "int(bytestring(-31) << 27) == -31 << 27"
   ],
   "Test des opérations de comparaison:": [
     "not (bytestring(3) > bytestring(3))",
@@ -70,18 +80,18 @@
   "Test des opérations mathématiques:": [
     "abs(bytestring(-10)) == \"1010\"",
     "bytestring(2) + int(bytestring(3)) == 5",
-    "int(bytestring(bytestring(2) + bytestring(3))) == 5",
+    "int(bytestring(2) + bytestring(3)) == 5",
     "bytestring(5) - bytestring(10) == bytestring(-5)",
-    "int(bytestring(bytestring(10) * bytestring(10))) == 100",
-    "int(bytestring(bytestring(10) // bytestring(10))) == 1",
-    "int(bytestring(bytestring(100000000000000) * bytestring(-1))) == -100000000000000",
+    "int(bytestring(10) * bytestring(10)) == 100",
+    "int(bytestring(10) // bytestring(10)) == 1",
+    "int(bytestring(100000000000000) * bytestring(-1)) == -100000000000000",
     "bytestring(-3) + int(bytestring(-3)) == -6"
   ],
   "Test des opérations spéciales:": [
     "bytestring(12121212).cypher(bytestring(1254)).cypher(bytestring(1254)) == bytestring(12121212)",
-    "bytestring(1212).complement(2) == bytestring(1212).complement(1)+1",
+    "int(bytestring(bytestring(1212).complement(2))) == bytestring(bytestring(1212).complement(1))+1",
     "~ bytestring(1212) == bytestring(1212).complement(1)",
-    "bytestring(\"abaca\").radix() == \"abaca\""
+    "bytestring(\"david\").radix() == \"ZGF2aWQ=\""
   ],
   "Tests abandonnés:": [
     "str(bytestring(\"€uro\")) == \"€uro\""
