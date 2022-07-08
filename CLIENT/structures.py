@@ -14,7 +14,9 @@ class Commandeur():
                                   "rmdir": commandes.rmdir,
                                   "cd": commandes.cd,
                                   "mkr": commandes.mkr,
-                                  "rkr": commandes.rkr}
+                                  "rkr": commandes.rkr,
+                                  "rsa_gen_keys": commandes.rsa_gen_keys,
+                                  "rgk": commandes.rsa_gen_keys}
 
     def ecrire(self, ligne, centrer=False):
         self.historique.pop(0)

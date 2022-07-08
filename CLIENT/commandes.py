@@ -1,9 +1,12 @@
 # ---------- IMPORATIONS ----------
+import json
 import os
 import random
-
-import globals
 from passlib.hash import phpass
+import secrets
+
+from bytes import bytestring
+import globals
 
 # ---------- VARIABLES GLOBALES ----------
 __author__ = "reza0310"
@@ -20,7 +23,8 @@ def help():
              "cd [chemin]": "Change de dossier actuel",
              "mkr [nom]": "Créé un porte clef, une liste de contacts",
              "rkr [nom]": "Supprime un porte clef, une liste de contacts",
-             "lkr": "Lister les porte clefs, les listes de contacts"},
+             "lkr": "Lister les porte clefs, les listes de contacts",
+             "rsa_gen_keys": "Générer une paire de clefs"},
             {"help": "h, ?",
              "cwd": "",
              "ls": "listdir, dir",
@@ -29,7 +33,8 @@ def help():
              "cd [chemin]": "",
              "mkr [nom]": "",
              "rkr [nom]": "",
-             "lkr": ""}]
+             "lkr": "",
+             "rsa_gen_keys": "rgk"}]
 
 
 def cwd(dontcrash):
@@ -46,6 +51,9 @@ def ls():
         elif x.count("[CONVERSATION]") == 1:
             bonus = "CONVERSATION"
             x = x.replace("[CONVERSATION]", "").replace(".json", "")
+        elif x.count("[CLEFS]") == 1:
+            bonus = "CLEFS"
+            x = x.replace("[CLEFS]", "").replace(".json", "")
         else:
             bonus = "DOSSIER"
         res.append(x.ljust(69)+" | "+bonus)
@@ -221,6 +229,81 @@ def packet_header(tag, data_size):
         # Premier octet entre 224 et 254
         header += int_to_bytestring(1 << ((data_size >> (data_size.bit_length() - 8)) & 0x1F)).zfill(8)
     return header, partial
+
+
+# ---------- RSA ----------
+
+
+def miller_rabin_prime(n):
+    # Source: https://gist.github.com/tbenjis/c8a8cf8c4bf6272f2be0
+    num_trials = 5  # number of bases to test
+    assert n >= 2  # make sure n >= 2 else throw error
+    # special case 2
+    if n == 2:
+        return True
+    # ensure n is odd
+    if n % 2 == 0:
+        return False
+    # write n-1 as 2**s * d
+    # repeatedly try to divide n-1 by 2
+    s = 0
+    d = n - 1
+    while True:
+        quotient, remainder = divmod(d, 2)  # here we get the quotient and the remainder
+        if remainder == 1:
+            break
+        s += 1
+        d = quotient
+    assert (2 ** s * d == n - 1)  # make sure 2**s*d = n-1
+    # test the base a to see whether it is a witness for the compositeness of n
+    def try_composite(a):
+        if pow(a, d, n) == 1:  # defined as pow(x, y) % z = 1
+            return False
+        for i in range(s):
+            if pow(a, 2 ** i * d, n) == n - 1:
+                return False
+        return True  # n is definitely composite
+    for i in range(num_trials):
+        # try several trials to check for composite
+        a = random.randrange(2, n)
+        if try_composite(a):
+            return False
+    return True  # no base tested showed n as composite
+
+
+def bezout_euclide_etendu(rn, rn1, un=1, un1=0, vn=0, vn1=1):
+    q = rn // rn1
+    rn2 = rn - q * rn1
+    while rn2 != 0:
+        (rn, rn1, un, un1, vn, vn1) = (rn1, rn2, un1, (un - q * un1), vn1, (vn - q * vn1))
+        q = rn // rn1
+        rn2 = rn - q * rn1
+    return rn1, un1, vn1
+
+
+def rsa_gen_keys(nom):
+    print(f"Started generating {nom} keys")
+    p = secrets.randbits(1024)
+    print("Searching p")
+    while not(miller_rabin_prime(p)):
+        p = secrets.randbits(1024)
+    print("p found")
+    q = secrets.randbits(1024)
+    print("Searching q")
+    while not(miller_rabin_prime(q)):
+        q = secrets.randbits(1024)
+    print("q found")
+    n = p*q
+    indic = (p-1) * (q-1)
+    e = secrets.randbits(3072)
+    while not(bezout_euclide_etendu(e, indic)[0] == 1):
+        print("Searching e")
+        e = secrets.randbits(3072)
+    d = bezout_euclide_etendu(e, indic)[1]
+    file = open(actuel+globals.separateur+f"[CLEFS]{nom}.json", "w+")
+    json.dump({"n": bytestring(n).contenu, "e": bytestring(e).contenu, "d": bytestring(d).contenu}, file)
+    file.close()
+    return "Travail terminé"
 
 
 # ---------- FIN ----------

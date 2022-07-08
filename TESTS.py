@@ -1,7 +1,9 @@
 import json
 from CLIENT.bytes import bytestring
+from CLIENT.commandes import bezout_euclide_etendu
 
-testsets = {"TESTS BYTESTRINGS:": open("test_bytestrings.json", "r", encoding="utf-8")}
+testsets = {"TESTS BYTESTRINGS:": open("test_bytestrings.json", "r", encoding="utf-8"),
+            "TESTS ARITHMETIQUES:": open("test_arith.json", "r", encoding="utf-8")}
 for testset in testsets.keys():
     print(testset, "\n")
     tests = json.load(testsets[testset])
