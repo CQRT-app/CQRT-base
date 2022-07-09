@@ -1,4 +1,7 @@
+import socket
+
 __author__ = "reza0310"
+
 
 def initialize():
     # Variables indépendantes:
@@ -38,3 +41,15 @@ def initialize():
 
     global jeu
     jeu = Coeur()
+
+    global account_client
+    account_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    global account_ip
+    account_ip = ""
+
+    global account_port
+    account_port = 0
+
+    global message_client
+    message_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

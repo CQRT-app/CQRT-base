@@ -9,7 +9,6 @@ from kivymd.app import MDApp
 from kivy.uix.widget import Widget
 
 import globals
-#import connexions
 
 
 class TextInput():
@@ -50,18 +49,110 @@ class TextInput():
         self.clavier = None
 
     def press(self, clavier, code, texte, modificateurs):
-        if code[0] in [303, 304, 308, 301]:  # rshift, shift, alt, capslock
+        #print(code, texte, modificateurs)
+        if code[0] in [303, 304, 308, 301, 307, 305]:  # rshift, shift, alt, capslock, alt-gr, lctrl
             pass
         elif code[0] == 8:
             self.text = self.text[:-1]
         elif code[0] == 13:
             self.sent = True
+        elif code[1].count("numpad") == 1:
+            self.text += code[1][6:].replace("decimal", ".")
+        elif texte == "1":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "1"
+            else:
+                self.text += "&"
+        elif texte == "2":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "2"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "~"
+            else:
+                self.text += "é"
+        elif texte == "3":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "3"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "#"
+            else:
+                self.text += '"'
+        elif texte == "4":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "4"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "{"
+            else:
+                self.text += "'"
+        elif texte == "5":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "5"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "["
+            else:
+                self.text += "("
+        elif texte == "6":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "6"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "|"
+            else:
+                self.text += "-"
+        elif texte == "7":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "7"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "`"
+            else:
+                self.text += "è"
+        elif texte == "8":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "8"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "\\"
+            else:
+                self.text += "_"
+        elif texte == "9":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "9"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "^"
+            else:
+                self.text += "ç"
+        elif texte == "0":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "0"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "@"
+            else:
+                self.text += "à"
+        elif texte == "°":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "°"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "]"
+            else:
+                self.text += ")"
+        elif texte == "+":
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                self.text += "+"
+            elif "ctrl" in modificateurs and "alt" in modificateurs:
+                self.text += "}"
+            else:
+                self.text += "="
         elif texte == None:
-            print("Code: ", code)
+            print("Code: ", code, modificateurs)
         else:
-            if "capslock" in modificateurs or "shift" in modificateurs:
-                if code[0] == 59:
+            if "capslock" in modificateurs or "shift" in modificateurs or "rshift" in modificateurs:
+                c = code[0]
+                if c == 59:
                    self.text += "."
+                elif c == 33:
+                    self.text += "§"
+                elif c == 58:
+                    self.text += "/"
+                elif c == 44:
+                    self.text += "?"
                 else:
                     self.text += texte.upper()
             else:

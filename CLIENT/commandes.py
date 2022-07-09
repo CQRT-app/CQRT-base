@@ -4,37 +4,73 @@ import os
 import random
 from passlib.hash import phpass
 import secrets
+import shutil
 
 from bytes import bytestring
 import globals
+import connexions
 
 # ---------- VARIABLES GLOBALES ----------
 __author__ = "reza0310"
 actuel = "home"
 
 
-# ---------- FONCTIONS DE MANIPULATION ----------
+# ---------- FONCTIONS UTILES ----------
+def identifile_moins(filename):
+    if filename.count("[") == 1:
+        if filename.count(".json") == 1:
+            y = filename.split("]")
+            bonus = y[0][1:]
+            x = filename.replace(f"[{bonus}]", "").replace(".json", "")
+            return x, bonus
+        else:
+            return filename, "CONVERSATION"
+    else:
+        return filename, "DOSSIER"
+
+
+def identifile_plus(filename):
+    for x in os.listdir(actuel):
+        if x == filename or x == "[CONVERSATION]"+filename or x.count("]") == 1 and x.split("]")[1][:-5] == filename:
+            return x, os.path.isdir(actuel+globals.separateur+x)
+
+
+# ---------- FONCTIONS DE COMMANDES ----------
 def help():
     return [{"help": "Afficher l'utilisé de chaque commande.",
              "cwd": "Affiche le chemin du dossier actuel",
              "ls": "Affiche le contenu du dossier actuel",
              "mkdir [nom]": "Créé un nouveau dossier nommé comme demandé dans le dossier actuel",
-             "rmdir [nom]": "Supprime le dossier nommé comme demandé dans le dossier actuel",
              "cd [chemin]": "Change de dossier actuel",
              "mkr [nom]": "Créé un porte clef, une liste de contacts",
-             "rkr [nom]": "Supprime un porte clef, une liste de contacts",
-             "lkr": "Lister les porte clefs, les listes de contacts",
-             "rsa_gen_keys": "Générer une paire de clefs"},
+             "rm [nom]": "Supprime un fichier, dossier ou conversation.",
+             "mv [nom] [destination]": "Déplace un fichier, dossier ou conversation du dossier actuel vers le chemin absolu 'destination'",
+             "lkr [nom]": "Lister les contacts d'un porte-clef",
+             "rsa_gen_keys [nom]": "Générer une paire de clefs",
+             "client_connect [account/message] [ip]:[port]": "Connecter son client de compte ou de message a un serveur",
+             "make_account [pseudo] [clef]": "Se créer un compte avec le pseudo [pseudo] associé à la clef [clef] sur le serveur de comptes actuel",
+             "list_accounts [pseudo]": "Lister tout les comptes ayant pour pseudo [pseudo] sur le serveur de comptes actuel",
+             "get_account [id] [porte-clef]": "Ajoute le compte d'identifiant [id] de votre serveur à votre porte-clefs [porte-clef]",
+             "reset": "SUPPRIME TOUT",
+             "send_message [compte] [porteclefs] [pseudo] [titre] [message]": "Envoie le message [message] chiffré au compte [pseudo] du porte-clefs [porteclefs] avec le titre [titre].",
+             "credits": "Affiche les credits"},
             {"help": "h, ?",
              "cwd": "",
              "ls": "listdir, dir",
              "mkdir [nom]": "",
-             "rmdir [nom]": "",
              "cd [chemin]": "",
              "mkr [nom]": "",
-             "rkr [nom]": "",
-             "lkr": "",
-             "rsa_gen_keys": "rgk"}]
+             "rm [nom]": "",
+             "mv [nom] [destination]": "",
+             "lkr [nom]": "",
+             "rsa_gen_keys [nom]": "rgk",
+             "client_connect [account/message] [ip]:[port]": "",
+             "make_account [pseudo] [clef]": "",
+             "list_accounts [pseudo]": "",
+             "get_account [id] [porte-clef]": "",
+             "reset": "",
+             "send_message [compte] [porteclefs] [pseudo] [titre] [message]": "",
+             "credits": ""}]
 
 
 def cwd(dontcrash):
@@ -45,37 +81,16 @@ def ls():
     resultats = os.listdir(actuel)
     res = []
     for x in resultats:
-        if x.count("[PORTECLEF]") == 1:
-            bonus = "PORTECLEF"
-            x = x.replace("[PORTECLEF]", "").replace(".json", "")
-        elif x.count("[CONVERSATION]") == 1:
-            bonus = "CONVERSATION"
-            x = x.replace("[CONVERSATION]", "").replace(".json", "")
-        elif x.count("[CLEFS]") == 1:
-            bonus = "CLEFS"
-            x = x.replace("[CLEFS]", "").replace(".json", "")
-        else:
-            bonus = "DOSSIER"
+        x, bonus = identifile_moins(x)
         res.append(x.ljust(69)+" | "+bonus)
     return res
 
 
 def mkdir(nom):
-    if nom.count("conv") == 0:
+    if nom.count("[CONVERSATION]") == 0:
         try:
             os.mkdir(actuel+globals.separateur+nom)
-            return "Travail terminé"
-        except Exception as e:
-            return str(e)
-    else:
-        return "Je réserve ce nom"
-
-
-def rmdir(nom):
-    if nom.count("conv") == 0:
-        try:
-            os.remove(actuel+globals.separateur+nom)
-            return "Travail terminé"
+            return "."
         except Exception as e:
             return str(e)
     else:
@@ -89,151 +104,157 @@ def cd(chemin):
             nouveau = ""
             for x in actuel.split(globals.separateur)[:-1]:
                 nouveau += globals.separateur + x
-            actuel = nouveau
+            actuel = nouveau[1:]
         elif x.ljust(69)+" | DOSSIER" in ls():
             actuel += globals.separateur + x
         elif x == "..":
             return "Déjà à la racine"
         else:
             return "Mauvais nom de dossier"
-    return "Travail terminé"
+    return "."
 
 
 def mkr(nom):
-    f = open("home/[PORTECLEF]"+nom+".json", "w+")
+    f = open(actuel+globals.separateur+"[PORTECLEF]"+nom+".json", "w+")
+    json.dump({}, f)
     f.close()
-    return "Travail terminé"
+    return "."
 
 
-def rkr(nom):
+def rm(nom):
+    nom, dir = identifile_plus(nom)
+    nom = actuel+globals.separateur+nom
     try:
-        os.remove("home/[PORTECLEF]"+nom+".json")
-        return "Travail terminé"
-    except:
-        return "Porte clef inexistant"
+        if dir:
+            shutil.rmtree(nom)
+        else:
+            os.remove(nom)
+        return "."
+    except Exception as e:
+        return "Erreur: "+str(e)
 
-def lkr():
-    res = []
-    for x in os.listdir("home"):
-        if x.count("[PORTECLEF]") == 1:
-            res.append(x.replace("[PORTECLEF]", "").replace(".json", ""))
-    return res
+
+def mv(nom, destination):
+    nom, dir = identifile_plus(nom)
+    nom = actuel+globals.separateur+nom
+    try:
+        shutil.move(nom, "home"+globals.separateur+destination)
+        return "."
+    except Exception as e:
+        return "Erreur: "+str(e)
+
+
+def lkr(nom):
+    f = open(actuel+globals.separateur+identifile_plus(nom)[0], "r")
+    data = json.load(f)
+    f.close()
+    return ["-"+x for x in data.keys()]
 
 
 def credits():
-    return """BASÉ SUR OPENPGP
+    return ["Idée de base:",
+            "рысь корп#8628",
+            "",
+            "Membres de l'équipe:",
+            "-рысь корп#8628",
+            "-viktor#7755",
+            "-TBZ_Jules785#5878",
+            "-Mazalex#7173",
+            "-reza0310#0310",
+            "",
+            "Planification technique:",
+            "-reza0310#0310",
+            "",
+            "Implémentation:",
+            "-reza0310#0310",
+            "",
+            "Design interface:",
+            "C'est juste des lignes de commande...",
+            "",
+            "Implémentation interface:",
+            "-reza0310#0310",
+            "",
+            "Bibliographie:",
+            "-https://passlib.readthedocs.io/en/stable/lib/passlib.hash.phpass.html",
+            "-https://fr.wikipedia.org/wiki/Algorithme_d'Euclide_étendu",
+            "-https://en.wikipedia.org/wiki/Primality_test",
+            "-https://docs.python.org/3/library/secrets.html#module-secrets",
+            "-https://fr.wikipedia.org/wiki/Chiffrement_RSA"]
 
-Idée de base:
-рысь корп#8628
 
-Membres de l'équipe:
--рысь корп#8628
--viktor#7755
--TBZ_Jules785#5878
--Mazalex#7173
--reza0310#0310
-
-Planification technique:
--reza0310#0310
-
-Implémentation:
--reza0310#0310
-
-Design interface:
-C'est juste des lignes de commande...
-
-Implémentation interface:
--reza0310#0310
-
-Bibliographie:
--RFC 4880 (OpenPGP Message Format)
--RFC 2119 (Key words for use in RFCs to Indicate Requirement Levels)
--https://passlib.readthedocs.io/en/stable/lib/passlib.hash.phpass.html"""
+def reset():
+    shutil.rmtree("home")
+    os.mkdir("home")
+    return "."
 
 
-# ---------- S2K (RFC 4880 PAGE 10) ----------
-def S2K(donnees, id, taille, c=10):
-    if id == 0:
-        return str(etendre_clef(donnees, taille)).zfill(taille+8)
+# ---------- FONCTIONS DE CONNEXION ----------
+def client_connect(type, iport):
+    ip, port = iport.split(":")
+    port = int(port)
+    if type == "account":
+        globals.account_client.connect((ip, port))
+        globals.account_ip = ip
+        globals.account_port = port
     else:
-        caracteres_valides = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                              "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
-                              "s", "t", "u", "v", "w", "x", "y", "z",
-                              "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-                              "S", "T", "U", "V", "W", "X", "Y", "Z"]
-        sel = ""
-        for i in range(8):
-            sel += random.choice(caracteres_valides)
-
-        if id == 1:
-            return str(1 << taille | etendre_clef(donnees, taille, sel=sel)).zfill(taille+8) + string_to_bytestring(sel)
-        elif id == 3:
-            return str(3 << taille | etendre_clef(donnees, taille, sel=sel, fois=c-1)).zfill(taille+8) + string_to_bytestring(sel) + int_to_bytestring((16 + (c & 15)) >> ((c << 4) + 6))
+        globals.message_client.connect((ip, port))
+    return "."
 
 
-def etendre_clef(donnees, taille, sel=None, fois=0):
-    i = 1
-    hash = nettoyer_hash(donnees, sel=sel)
-    for i in range(fois):
-        hash = nettoyer_hash(hash, sel=sel)
-    res = hash
-    # Augmentation de la taille
-    while res.bit_length() < taille:
-        for x in range(i):
-            res <<= 8  # Le padding mentionné dans la RFC
-        res <<= 176  # Concatenation binaire par décalage et ou logique
-        res |= hash
-        i += 1
-    # Réduction de la taille
-    res >>= res.bit_length()-taille
-    return res
+def make_account(pseudo, clef):
+    f = open(actuel+globals.separateur+f"[CLEFS]{clef}.json", "r")
+    key = json.load(f)
+    f.close()
+    infos = connexions.echanger(globals.account_client, f"makeaccount\0{pseudo}\0{key['n']}\0{key['e']}")
+    if infos[:7] == "Succès!":
+        f = open(actuel+globals.separateur+"[COMPTE]"+pseudo+"@"+globals.account_ip+".json", "w+")
+        json.dump({"id": infos[-3:], "serveur": globals.account_ip, "clef": {"n": key["n"], "e": key["e"], "d": key["d"]}}, f)
+        f.close()
+    return infos
 
 
-def nettoyer_hash(texte, sel):
-    if sel is None:
-        hash = phpass.hash(texte.encode("utf-8"))
-    else:
-        hash = phpass.hash(texte.encode("utf-8"), salt=sel)
-
-    # Découpe de la variable hash par caractères:
-    # 1-3: Préfixe
-    # 4: Nombre de rounds
-    # 5 - 12: Sel
-    # 13 - 34: Checksum
-    return int(string_to_bytestring(hash[12:]), 2)
+def list_accounts(pseudo):
+    return ["Identifiants correspondants à ce nom sur votre serveur de comptes actuel:"]+connexions.echanger(globals.account_client, f"listaccounts\0{pseudo}").split("\0")
 
 
-# ---------- PACKETS (RFC 4880 PAGE 13) ----------
+def get_account(id, porteclef):
+    path = actuel+globals.separateur+identifile_plus(porteclef)[0]
+
+    with open(path, "r") as f:
+        data = json.load(f)
+
+    pseudo, n, e = connexions.echanger(globals.account_client, f"get\0{id}").split("\0")
+    data[pseudo] = {"serveur": globals.account_ip, "id": id, "n": n, "e": e}
+
+    with open(path, "w") as f:
+        json.dump(data, f)
+    return "."
 
 
-def packet_header(tag, data_size):
-    # data_size est un nombre d'octets pas de bits
-    partial = False
-    header = "11"
-    header += tag  # 6 bits
-    if data_size < 192:
-        # Premier octet entre 0 et 191
-        header += int_to_bytestring(data_size).zfill(8)
-    elif data_size < 8384:
-        # Premier octet entre 192 et 223
-        octet1 = data_size >> 8
-        octet2 = data_size - (octet1 << 8)
-        header += int_to_bytestring(((octet1 - 192) << 8) + (octet2) + 192).zfill(16)
-    elif data_size < 4294967296:
-        # Premier octet = 255
-        octets = []
-        for i in range(5):
-            octets.append((data_size >> (8*i)) - (data_size >> (8*(i+1))))
-        header += "11111111" + int_to_bytestring((octets[1] << 24) | (octets[2] << 16) | (octets[3] << 8) | octets[4]).zfill(32)
-    else:
-        # Premier octet entre 224 et 254
-        header += int_to_bytestring(1 << ((data_size >> (data_size.bit_length() - 8)) & 0x1F)).zfill(8)
-    return header, partial
+def send_message(compte, porteclef, autre, titre, message):
+    with open(actuel+globals.separateur+identifile_plus(compte)[0], "r") as f:
+        datmoi = json.load(f)
+    with open(actuel+globals.separateur+identifile_plus(porteclef)[0], "r") as f:
+        datautre = json.load(f)[autre]
+
+    hash = bytestring(phpass.hash(message))
+    message = bytestring(message)
+    clef_session = bytestring(secrets.randbits(len(message)))
+    signature = bytestring(phpass.hash("Ceci est une signature"))
+
+    message_chiffre = message.cypher(clef_session).contenu
+    clef_chiffree = bytestring(rsa_cypher(int(clef_session), int(datautre["n"], 2), int(datautre["e"], 2))).contenu
+    integritee_chiffree = bytestring(rsa_cypher(int(hash), int(datautre["n"], 2), int(datautre["e"], 2))).contenu
+    signature_chiffree = bytestring(rsa_cypher(int(signature), int(datmoi["clef"]["n"], 2), int(datmoi["clef"]["d"], 2))).contenu
+
+    connexions.echanger(globals.message_client, "push\0" +
+                        f"{datautre['id']}\0{datautre['serveur']}\0" +
+                        f"{datmoi['id']}\0{datmoi['serveur']}\0" +
+                        f"{titre}\0{message_chiffre}\0{clef_chiffree}\0{integritee_chiffree}\0{signature_chiffree}")
+    return "."
 
 
 # ---------- RSA ----------
-
-
 def miller_rabin_prime(n):
     # Source: https://gist.github.com/tbenjis/c8a8cf8c4bf6272f2be0
     num_trials = 5  # number of bases to test
@@ -282,71 +303,50 @@ def bezout_euclide_etendu(rn, rn1, un=1, un1=0, vn=0, vn1=1):
 
 
 def rsa_gen_keys(nom):
-    print(f"Started generating {nom} keys")
+
+    globals.jeu.commandeur.ecrire(f"Début de la génération des clefs {nom}")
+
     p = secrets.randbits(1024)
-    print("Searching p")
+
+    globals.jeu.commandeur.ecrire("Recherche de p")
+
     while not(miller_rabin_prime(p)):
         p = secrets.randbits(1024)
-    print("p found")
+
+    globals.jeu.commandeur.ecrire("p trouvé")
+
     q = secrets.randbits(1024)
-    print("Searching q")
+
+    globals.jeu.commandeur.ecrire("Recherche de q")
+
     while not(miller_rabin_prime(q)):
         q = secrets.randbits(1024)
-    print("q found")
+
+    globals.jeu.commandeur.ecrire("q trouvé")
+
     n = p*q
     indic = (p-1) * (q-1)
     e = secrets.randbits(3072)
+
+    globals.jeu.commandeur.ecrire("Recherche de e")
+
     while not(bezout_euclide_etendu(e, indic)[0] == 1):
-        print("Searching e")
         e = secrets.randbits(3072)
+
+    globals.jeu.commandeur.ecrire("e trouvé")
+
     d = bezout_euclide_etendu(e, indic)[1]
+
+    globals.jeu.commandeur.ecrire("d calculé")
+
     file = open(actuel+globals.separateur+f"[CLEFS]{nom}.json", "w+")
     json.dump({"n": bytestring(n).contenu, "e": bytestring(e).contenu, "d": bytestring(d).contenu}, file)
     file.close()
-    return "Travail terminé"
+    return "."
 
+
+def rsa_cypher(message, n, ed):
+    # Utiliser n et e pour public, n et d pour privé
+    return pow(message, ed, n)
 
 # ---------- FIN ----------
-
-
-# Commencer les fichiers de clefs privées par 11111111 01010000 00000011 si chiffré et 0 sinon
-# These are followed by an Initial Vector of the same length as the block size of the cipher for the decryption of the secret values, if they are encrypted, and then the secret-key values themselves.
-
-# Packets: 11XXXXXX
-
-"""
-Infos:
-1. The sender creates a message.
-2. The sending OpenPGP generates a random number to be used as a
-session key for this message only.
-3. The session key is encrypted using each recipient’s public key.
-These "encrypted session keys" start the message.
-4. The sending OpenPGP encrypts the message using the session key,
-which forms the remainder of the message. Note that the message
-is also usually compressed.
-5. The receiving OpenPGP decrypts the session key using the
-recipient’s private key.
-6. The receiving OpenPGP decrypts the message using the session key.
-If the message was compressed, it will be decompressed.
-
-
-First, a signature is generated for the message
-and attached to the message. Then the message plus signature is
-encrypted using a symmetric session key. Finally, the session key is
-encrypted using public-key encryption and prefixed to the encrypted
-block.
-
-1. The sender creates a message.
-2. The sending software generates a hash code of the message.
-3. The sending software generates a signature from the hash code
-using the sender’s private key.
-4. The binary signature is attached to the message.
-5. The receiving software keeps a copy of the message signature.
-6. The receiving software generates a new hash code for the received
-message and verifies it using the message’s signature. If the
-verification is successful, the message is accepted as authentic.
-
-OpenPGP implementations SHOULD compress the message after applying
-the signature but before encryption.
-
-"""
