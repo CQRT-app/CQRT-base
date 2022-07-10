@@ -9,6 +9,7 @@ from kivymd.app import MDApp
 from kivy.uix.widget import Widget
 
 import globals
+import commandes
 
 
 class TextInput():
@@ -36,7 +37,7 @@ class TextInput():
         self.event = Clock.schedule_interval(self.actualiser, 1/globals.FPS)  # 60 fps
 
     def actualiser(self, dt):
-        globals.hud.texte(self.x-(self.tx//2)+10, self.y, "> "+self.shown_text)
+        globals.hud.texte(self.x-(self.tx//2)+10, self.y, commandes.actuel+"> "+self.shown_text)
 
     def focus(self):
         global layout
@@ -249,10 +250,10 @@ class Ecran(Widget):
             super().on_touch_down(touch)
         
 
-class PROJETApp(MDApp):
+class CQRTApp(MDApp):
     def build(self):
         global layout
-        self.title = 'PROJET'
+        self.title = 'CQRT'
         Window.clearcolor = (1, 1, 1, 1)
         if globals.mode == "DEV":
             if globals.orientation == "portrait":
@@ -265,4 +266,4 @@ class PROJETApp(MDApp):
 
 
 def start():
-    PROJETApp().run()
+    CQRTApp().run()

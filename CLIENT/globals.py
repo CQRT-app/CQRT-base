@@ -53,3 +53,6 @@ def initialize():
 
     global message_client
     message_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    global message_ip
+    message_ip = ""

@@ -35,6 +35,20 @@ def identifile_plus(filename):
             return x, os.path.isdir(actuel+globals.separateur+x)
 
 
+def pprint(x):
+    globals.jeu.commandeur.ecrire(x)
+    print(x)
+
+
+def bite(x):
+    res = bytestring(x)
+    if res.contenu[0] == "1":
+        res.signed = True
+    else:
+        res.contenu = res.contenu[1:]
+    return res
+
+
 # ---------- FONCTIONS DE COMMANDES ----------
 def help():
     return [{"help": "Afficher l'utilisé de chaque commande.",
@@ -53,6 +67,8 @@ def help():
              "get_account [id] [porte-clef]": "Ajoute le compte d'identifiant [id] de votre serveur à votre porte-clefs [porte-clef]",
              "reset": "SUPPRIME TOUT",
              "send_message [compte] [porteclefs] [pseudo] [titre] [message]": "Envoie le message [message] chiffré au compte [pseudo] du porte-clefs [porteclefs] avec le titre [titre].",
+             "pull_messages [compte]": "Récupérera tout les messages adressés à votre compte sur le serveur non-encore dans le dossier",
+             "read_message [compte] [message]": "Lira un fichier de message avec le compte [compte]",
              "credits": "Affiche les credits"},
             {"help": "h, ?",
              "cwd": "",
@@ -70,6 +86,8 @@ def help():
              "get_account [id] [porte-clef]": "",
              "reset": "",
              "send_message [compte] [porteclefs] [pseudo] [titre] [message]": "",
+             "pull_messages [compte]": "",
+             "read_message [compte] [message]": "",
              "credits": ""}]
 
 
@@ -198,6 +216,7 @@ def client_connect(type, iport):
         globals.account_port = port
     else:
         globals.message_client.connect((ip, port))
+        globals.message_ip = ip
     return "."
 
 
@@ -242,16 +261,80 @@ def send_message(compte, porteclef, autre, titre, message):
     clef_session = bytestring(secrets.randbits(len(message)))
     signature = bytestring(phpass.hash("Ceci est une signature"))
 
+    datautre["n"] = bite(datautre["n"])
+    datautre["e"] = bite(datautre["e"])
+    datmoi["clef"]["n"] = bite(datmoi["clef"]["n"])
+    datmoi["clef"]["d"] = bite(datmoi["clef"]["d"])
+
     message_chiffre = message.cypher(clef_session).contenu
-    clef_chiffree = bytestring(rsa_cypher(int(clef_session), int(datautre["n"], 2), int(datautre["e"], 2))).contenu
-    integritee_chiffree = bytestring(rsa_cypher(int(hash), int(datautre["n"], 2), int(datautre["e"], 2))).contenu
-    signature_chiffree = bytestring(rsa_cypher(int(signature), int(datmoi["clef"]["n"], 2), int(datmoi["clef"]["d"], 2))).contenu
+    clef_chiffree = bytestring(rsa_cypher(int(clef_session), int(datautre["n"]), int(datautre["e"]))).contenu
+    integritee_chiffree = bytestring(rsa_cypher(int(hash), int(datautre["n"]), int(datautre["e"]))).contenu
+    signature_chiffree = bytestring(rsa_cypher(int(signature), int(datmoi["clef"]["n"]), int(datmoi["clef"]["d"]))).contenu
 
     connexions.echanger(globals.message_client, "push\0" +
                         f"{datautre['id']}\0{datautre['serveur']}\0" +
                         f"{datmoi['id']}\0{datmoi['serveur']}\0" +
                         f"{titre}\0{message_chiffre}\0{clef_chiffree}\0{integritee_chiffree}\0{signature_chiffree}")
     return "."
+
+
+def pull_messages(compte):
+    # [MESSAGE]id_ip.json
+    with open(actuel+globals.separateur+identifile_plus(compte)[0], "r") as f:
+        datmoi = json.load(f)
+    ip = globals.message_ip
+
+    a_pull = connexions.echanger(globals.message_client, f"pull\0{datmoi['id']}@{datmoi['serveur']}").split("\0")
+    pulled = os.listdir(actuel)
+    for x in a_pull:
+        id = x
+        if not("[MESSAGE]"+id+"_"+ip+".json" in pulled):
+            with open(actuel+globals.separateur+"[MESSAGE]"+id+"_"+ip+".json", "w+") as f:
+                getter = connexions.echanger(globals.message_client, f"get\0{id}").split("\0")
+                json.dump({"sender": {"id": getter[0], "serveur": getter[1]},
+                           "heure": getter[2], "date": getter[3], "titre": getter[4],
+                           "message_chiffre": getter[5], "clef_chiffree": getter[6],
+                           "integritee_chiffree": getter[7], "signature_chiffree": getter[8]}, f)
+    return "."
+
+
+def read_message(compte, message):
+    # Extraction données
+    with open(actuel+globals.separateur+identifile_plus(compte)[0], "r") as f:
+        datmoi = json.load(f)
+    with open(actuel+globals.separateur+identifile_plus(message)[0], "r") as f:
+        message_data = json.load(f)
+    if message_data["sender"]["serveur"] != globals.account_ip:
+        return f"Veuillez vous connecter au serveur de comptes {message_data['sender']['serveur']} pour lire ce message."
+    sender_pseudo, sender_n, sender_e = connexions.echanger(globals.account_client, f"get\0{message_data['sender']['id']}").split("\0")
+
+    # Méta-informations
+    globals.jeu.commandeur.ecrire(f"Message envoyé par {sender_pseudo} le {message_data['date']} à {message_data['heure']}:")
+
+    # Signature
+    sender_n = bite(sender_n)
+    sender_e = bite(sender_e)
+
+    signature = str(bytestring(rsa_cypher(int(message_data["signature_chiffree"], 2), int(sender_n), int(sender_e))))
+    globals.jeu.commandeur.ecrire(f"Indicateur de signature (False => l'envoyeur est un imposteur et non pas celui qu'il prétend être): {phpass.verify('Ceci est une signature', signature)}")
+
+    # Récupération clef symmétrique
+    datmoi["clef"]["n"] = bite(datmoi["clef"]["n"])
+    datmoi["clef"]["d"] = bite(datmoi["clef"]["d"])
+
+    clef = bytestring(rsa_cypher(int(message_data["clef_chiffree"], 2), int(datmoi["clef"]["n"]), int(datmoi["clef"]["d"])))
+
+    # Récupération hash msg
+    hash = str(bytestring(rsa_cypher(int(message_data["integritee_chiffree"], 2), int(datmoi["clef"]["n"]), int(datmoi["clef"]["d"]))))
+    print(hash)
+
+    # Récupération msg
+    message = str(bytestring(message_data["message_chiffre"]).cypher(clef))
+    print(message)
+    globals.jeu.commandeur.ecrire(f"Indicateur d'intégrité (False => le message a été truqué): {phpass.verify(message, hash)}")
+
+    globals.jeu.commandeur.ecrire(f'"{message_data["titre"]}":')
+    return message
 
 
 # ---------- RSA ----------
@@ -304,45 +387,52 @@ def bezout_euclide_etendu(rn, rn1, un=1, un1=0, vn=0, vn1=1):
 
 def rsa_gen_keys(nom):
 
-    globals.jeu.commandeur.ecrire(f"Début de la génération des clefs {nom}")
+    pprint(f"Début de la génération des clefs {nom}")
 
     p = secrets.randbits(1024)
 
-    globals.jeu.commandeur.ecrire("Recherche de p")
+    pprint("Recherche de p")
 
     while not(miller_rabin_prime(p)):
         p = secrets.randbits(1024)
 
-    globals.jeu.commandeur.ecrire("p trouvé")
+    pprint("p trouvé")
 
     q = secrets.randbits(1024)
 
-    globals.jeu.commandeur.ecrire("Recherche de q")
+    pprint("Recherche de q")
 
     while not(miller_rabin_prime(q)):
         q = secrets.randbits(1024)
 
-    globals.jeu.commandeur.ecrire("q trouvé")
+    pprint("q trouvé")
 
-    n = p*q
+    n = bite(bytestring(p*q).signed_version())
     indic = (p-1) * (q-1)
     e = secrets.randbits(3072)
 
-    globals.jeu.commandeur.ecrire("Recherche de e")
+    pprint("Recherche de e")
 
     while not(bezout_euclide_etendu(e, indic)[0] == 1):
         e = secrets.randbits(3072)
 
-    globals.jeu.commandeur.ecrire("e trouvé")
+    pprint("e trouvé")
 
-    d = bezout_euclide_etendu(e, indic)[1]
+    d = bite(bytestring(bezout_euclide_etendu(e, indic)[1]).signed_version())
+    e = bite(bytestring(e).signed_version())
 
-    globals.jeu.commandeur.ecrire("d calculé")
+    pprint("d calculé")
+    pprint("test des clefs")
 
-    file = open(actuel+globals.separateur+f"[CLEFS]{nom}.json", "w+")
-    json.dump({"n": bytestring(n).contenu, "e": bytestring(e).contenu, "d": bytestring(d).contenu}, file)
-    file.close()
-    return "."
+    x = secrets.randbits(10)
+    if pow(pow(x, int(e), int(n)), int(d), int(n)) == pow(pow(x, int(d), int(n)), int(e), int(n)) == x:
+        pprint("test validé")
+        with open(actuel+globals.separateur+f"[CLEFS]{nom}.json", "w+") as file:
+            json.dump({"n": n.signed_version(), "e": e.signed_version(), "d": d.signed_version()}, file)
+        return "."
+    else:
+        pprint("test échoué")
+        return rsa_gen_keys(nom)
 
 
 def rsa_cypher(message, n, ed):

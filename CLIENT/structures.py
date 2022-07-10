@@ -21,7 +21,9 @@ class Commandeur():
                                   "reset": commandes.reset,
                                   "client_connect": commandes.client_connect,
                                   "make_account": commandes.make_account,
-                                  "get_account": commandes.get_account}
+                                  "get_account": commandes.get_account,
+                                  "pull_messages": commandes.pull_messages,
+                                  "read_message": commandes.read_message}
         self.commandes_listes = {"ls": commandes.ls,
                                  "listdir": commandes.ls,
                                  "dir": commandes.ls,
@@ -37,7 +39,7 @@ class Commandeur():
 
     def execute(self, commande):
         self.ecrire("")
-        self.ecrire("> "+commande)
+        self.ecrire(commandes.actuel+"> "+commande)
         c = commande.split(" ")
         arguments = c[1:]
         commande = c[0]

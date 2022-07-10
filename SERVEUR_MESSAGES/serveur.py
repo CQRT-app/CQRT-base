@@ -1,6 +1,7 @@
 __author__ = "reza0310"
 
 import datetime
+import time
 import json
 import socket
 import select
@@ -121,12 +122,24 @@ def traiter(requete, user):
         return "pong"
     elif requete[0] == "push":
         id = len(os.listdir("messages"))
-        with open(str(id)+"-"+requete[1]+"@"+requete[2]+"-.json", "w+") as f:
-            json.dump({"sender": {"id": requete[3], "serveur": requete[4]}, "heure": datetime.time, "date": datetime.date,
+        with open("messages"+os.sep+str(id)+"-"+requete[1]+"@"+requete[2]+"-.json", "w+") as f:
+            json.dump({"sender": {"id": requete[3], "serveur": requete[4]}, "heure": time.strftime("%H:%M:%S", time.localtime()), "date": datetime.date.today().strftime("%d/%m/%Y"),
                        "titre": requete[5], "message_chiffre": requete[6], "clef_chiffree": requete[7],
                        "integritee_chiffree": requete[8], "signature_chiffree": requete[9]}, f)
+        return "Message enregistré"
     elif requete[0] == "pull":
-        pass
+        res = ""
+        for x in os.listdir("messages"):
+            y = x.split("-")
+            if y[1] == requete[1]:
+               res += y[0]+"\0"
+        return res[:-1]
+    elif requete[0] == "get":
+        for x in os.listdir("messages"):
+            if x.split("-")[0] == requete[1]:
+                with open("messages/"+x, "r") as f:
+                    data = json.load(f)
+                return data["sender"]["id"]+"\0"+data["sender"]["serveur"]+"\0"+data["heure"]+"\0"+data["date"]+"\0"+data["titre"]+"\0"+data["message_chiffre"]+"\0"+data["clef_chiffree"]+"\0"+data["integritee_chiffree"]+"\0"+data["signature_chiffree"]
     else:
         return "Mauvaise requête"
 
