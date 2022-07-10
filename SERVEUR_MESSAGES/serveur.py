@@ -126,17 +126,34 @@ def traiter(requete, user):
             json.dump({"sender": {"id": requete[3], "serveur": requete[4]}, "heure": time.strftime("%H:%M:%S", time.localtime()), "date": datetime.date.today().strftime("%d/%m/%Y"),
                        "titre": requete[5]}, f)
             return str(id)
-    elif requete[0] == "push":
+    elif requete[0] == "push1":
         with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "r") as f:
             data = json.load(f)
             data["message_chiffre"] = requete[4]
-            data["clef_chiffree"] = requete[5]
-            data["integritee_chiffree"] = requete[6]
-            data["signature_chiffree"] = requete[7]
         with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "w") as f:
             json.dump(data, f)
         return "Message recu"
-
+    elif requete[0] == "push2":
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "r") as f:
+            data = json.load(f)
+            data["clef_chiffree"] = requete[4]
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "w") as f:
+            json.dump(data, f)
+        return "Message recu"
+    elif requete[0] == "push3":
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "r") as f:
+            data = json.load(f)
+            data["integritee_chiffree"] = requete[4]
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "w") as f:
+            json.dump(data, f)
+        return "Message recu"
+    elif requete[0] == "push4":
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "r") as f:
+            data = json.load(f)
+            data["signature_chiffree"] = requete[4]
+        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "w") as f:
+            json.dump(data, f)
+        return "Message recu"
     elif requete[0] == "pull":
         res = ""
         for x in os.listdir("messages"):
