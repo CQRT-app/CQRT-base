@@ -275,10 +275,7 @@ def send_message(compte, porteclef, autre, titre, message):
                         f"{datautre['id']}\0{datautre['serveur']}\0" +
                         f"{datmoi['id']}\0{datmoi['serveur']}\0" +
                         f"{titre}")
-    connexions.echanger(globals.message_client, f"push1\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{message_chiffre}")
-    connexions.echanger(globals.message_client, f"push2\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{clef_chiffree}")
-    connexions.echanger(globals.message_client, f"push3\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{integritee_chiffree}")
-    connexions.echanger(globals.message_client, f"push4\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{signature_chiffree}")
+    connexions.echanger(globals.message_client, f"push\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{message_chiffre}\0{clef_chiffree}\0{integritee_chiffree}\0{signature_chiffree}")
     return "."
 
 
