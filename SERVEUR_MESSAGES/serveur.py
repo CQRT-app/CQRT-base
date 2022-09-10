@@ -120,23 +120,13 @@ def traiter(requete, user):
     requete = requete.replace("'", "&apos;").replace("＇", "&apos;").replace("`", "&apos;").replace('"', '&quot;').replace('＂', '&quot;').split("\0")
     if requete[0] == "ping":
         return "pong"
-    elif requete[0] == "make":
+    elif requete[0] == "push":
         id = len(os.listdir("messages"))
         with open("messages"+os.sep+str(id)+"-"+requete[1]+"@"+requete[2]+"-.json", "w+") as f:
             json.dump({"sender": {"id": requete[3], "serveur": requete[4]}, "heure": time.strftime("%H:%M:%S", time.localtime()), "date": datetime.date.today().strftime("%d/%m/%Y"),
-                       "titre": requete[5]}, f)
-            return str(id)
-    elif requete[0] == "push":
-        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "r") as f:
-            data = json.load(f)
-            data["message_chiffre"] = requete[4]
-            data["clef_chiffree"] = requete[5]
-            data["integritee_chiffree"] = requete[6]
-            data["signature_chiffree"] = requete[7]
-        with open("messages"+os.sep+str(requete[1])+"-"+requete[2]+"@"+requete[3]+"-.json", "w") as f:
-            json.dump(data, f)
-        return "Message recu"
-
+                       "titre": requete[5], "message_chiffre": requete[6], "clef_chiffree": requete[7],
+                       "integritee_chiffree": requete[8], "signature_chiffree": requete[9]}, f)
+        return "Message enregistré"
     elif requete[0] == "pull":
         res = ""
         for x in os.listdir("messages"):

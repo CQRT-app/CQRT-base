@@ -271,11 +271,10 @@ def send_message(compte, porteclef, autre, titre, message):
     integritee_chiffree = bytestring(rsa_cypher(int(hash), int(datautre["n"]), int(datautre["e"]))).contenu
     signature_chiffree = bytestring(rsa_cypher(int(signature), int(datmoi["clef"]["n"]), int(datmoi["clef"]["d"]))).contenu
 
-    id = connexions.echanger(globals.message_client, "make\0" +
+    connexions.echanger(globals.message_client, "push\0" +
                         f"{datautre['id']}\0{datautre['serveur']}\0" +
                         f"{datmoi['id']}\0{datmoi['serveur']}\0" +
-                        f"{titre}")
-    connexions.echanger(globals.message_client, f"push\0{id}\0{datautre['id']}\0{datautre['serveur']}\0{message_chiffre}\0{clef_chiffree}\0{integritee_chiffree}\0{signature_chiffree}")
+                        f"{titre}\0{message_chiffre}\0{clef_chiffree}\0{integritee_chiffree}\0{signature_chiffree}")
     return "."
 
 
