@@ -18,24 +18,24 @@ Dans le première école dans laquelle j'étais, l'EPSI, on nous avais confié l
 L'objectif de ce projet est d'être un backend universel pour rendre tous les réseau sociaux, tous les tchats de jeu et de manière plus générale toutes les communications compatibles entre elles qu'on ai pas le problème de se trouver à chaque fois un réseau social en commun. Un autre des objectifs de CQRT est de remettre de l'éthique dans nos communications car je suis nostalgique des années 201X durant lesquelles les communications étaient grandement plus éthiques que de nos jours. Bien sûr il va s'en dire qu'un autre objectif très important de ce backend est la sécurité à son apogée et la gestion, le contrôle pour les utilisateurs et développeurs. Un dernier objectif qui me vient en tête sera la rétrocompatibilité qui sera assurée à partir de la première version de déploiement c'est à dire la version 3.0.0 pour le moment.
 
 ## Versions
-Pour le versionnage le protocole de nommage est le suivant:
+Pour le versionnage le protocole de nommage est le suivant:<br>
 [nombre de présentations annuelles passées à l'EPSI].[nombre de nouvelles fonctionnalités depuis la dernière présentation].[nombre d'optimisations et de bugs réglés depuis la dernière fonctionnalité]
 
-Une rétrocompatibilité maximale sera assurée à partir de la version 3.0.0.
+Une rétrocompatibilité maximale sera assurée à partir de la version 3.0.0.<br>
 Une version est considérée comme ayant pour source officielle le commit du même nom (sauf si explicitement dit autrement) et comme ayant pour versions compilées officielles la release du même nom.
 
-Objectifs:
-1.0.0: Exister
-2.0.0: Être stable et utilisable + traduction en C# + premier frontend
-3.0.0: Déploiement + traduction en Java + second frontend
-4.0.0: Première couverture d'un autre réseau social + traduction en Swift + troisième frontend
+Objectifs:<br>
+1.0.0: Exister<br>
+2.0.0: Être stable et utilisable + traduction en C# + premier frontend<br>
+3.0.0: Déploiement + traduction en Java + second frontend<br>
+4.0.0: Première couverture d'un autre réseau social + traduction en Swift + troisième frontend<br>
 5.0.0: Finitions en tout genre
 
-Versions:
+Versions:<br>
 1.0.0: Existe
 
 ## Comment l'installer et l'utiliser?
-A partir des versions de déploiement, tous les liens de téléchargement seront accessibles depuis notre site web mais jusque là il va falloir télécharger des releases sur la page github du frontend désiré.
+A partir des versions de déploiement, tous les liens de téléchargement seront accessibles depuis notre site web mais jusque là il va falloir télécharger des releases sur la page github du frontend désiré.<br>
 Il est à noter que les dossiers vides ne passent pas sur github donc il va vous falloir les recréer vous-même si vous voulez recompiler de votre côté ou utiliser une version interprétée.
 
 ## Description fichier par fichier
@@ -77,7 +77,7 @@ Vous pouvez vous servir de ce dépôt pour vous entraîner à l'open source. Pou
 Aucune question ne nous a encore été posée.
 
 ## Nous contacter
-Commanditaire: Azrael: Azrael#002 sur discord.
+Commanditaire: Azrael: Azrael#002 sur discord.<br>
 Coordinateur: reza0310: [page de contact](https://github.com/reza0310#a-propos-de-mon-profil).
 
 ## License
