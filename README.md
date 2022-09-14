@@ -1,4 +1,2 @@
-# Appli_Kivy_7-CQRT
-Un petit projet de réseau social sécurisé comme on en voit tant
-
-# IMPORTANT: CREEZ UN DOSSIER "home" A LA RACINE DU CLIENT SINON CA MARCHE PAS
+# [🇫🇷 Documentation en français 🇫🇷](https://github.com/reza0310/Steganographie/blob/main/README.fr.md)
+# [🇺🇸 English documentation 🇬🇧](https://github.com/reza0310/Steganographie/blob/main/README.en.md)
